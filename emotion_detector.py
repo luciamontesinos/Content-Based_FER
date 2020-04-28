@@ -9,10 +9,10 @@ import cv2
 class EmotionDetector:
     def __init__(self):
         self.emotion = ['Sad', 'Happy', 'Neutral']
-        self.model = keras.models.load_model('my_model.h5')
+        self.model = keras.models.load_model('./resources/my_model.h5')
         self.font = cv2.FONT_HERSHEY_SIMPLEX
         self.cam = cv2.VideoCapture(0)
-        self.face_cas = cv2.CascadeClassifier('./cascades/haarcascade_frontalface_default.xml')
+        self.face_cas = cv2.CascadeClassifier('./resources/cascades/haarcascade_frontalface_default.xml')
         self.detected_emotions = []
         self.emotion_list = []
         self.song_ended = False
@@ -79,7 +79,7 @@ class EmotionDetector:
         for song in playlist:
             self.counter = 0
             self.song_ended = False
-            song = "/resources/playlist/" + str(song) + ".mp3"
+            song = "./resources/playlist/" + str(song) + ".mp3"
             print('Sampling...')
             player = Instance.media_player_new()
             Media = Instance.media_new(song)

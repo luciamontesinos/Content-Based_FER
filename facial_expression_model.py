@@ -25,15 +25,14 @@ from keras import backend
 def generate_dataset():
     """generate dataset from csv"""
 
-    df = pd.read_csv("./fer2013/fer2013.csv")
+    df = pd.read_csv("./resources/fer2013/fer2013.csv")
     indexNames = df[(df['emotion'] != 4) & (df['emotion'] != 3) & (df['emotion'] != 6)].index
     df.drop(indexNames, inplace=True)
-    df = df.replace(4,0)
-    df = df.replace(3,1)
-    df = df.replace(6,2)
+    df = df.replace(4, 0)
+    df = df.replace(3, 1)
+    df = df.replace(6, 2)
 
     print(df.head)
-
 
     train_samples = df[df['Usage'] == "Training"]
     validation_samples = df[df["Usage"] == "PublicTest"]
@@ -58,7 +57,6 @@ def generate_dataset():
     print("Happy", happy / len(y_test))
     print("Neutral", neutral / len(y_test))
 
-
     X_train = np.array([np.fromstring(image, np.uint8, sep=" ").reshape((48, 48)) for image in train_samples.pixels])
     X_valid = np.array(
         [np.fromstring(image, np.uint8, sep=" ").reshape((48, 48)) for image in validation_samples.pixels])
@@ -72,33 +70,31 @@ def generate_dataset():
 def generate_model(lr=0.001):
     """training model"""
 
-    # with tf.device('/gpu:0'):
+    model_n = models.Sequential()
+    model_n.add(layers.Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=(48, 48, 1)))
+    model_n.add(layers.Conv2D(32, (3, 3), padding='same', activation='relu'))
+    model_n.add(layers.Conv2D(32, (3, 3), padding='same', activation='relu'))
+    model_n.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
-    modelN = models.Sequential()
-    modelN.add(layers.Conv2D(32, (3, 3), padding='same', activation='relu',
-                             input_shape=(48, 48, 1)))
-    modelN.add(layers.Conv2D(32, (3, 3), padding='same', activation='relu'))
-    modelN.add(layers.Conv2D(32, (3, 3), padding='same', activation='relu'))
-    modelN.add(layers.MaxPooling2D(pool_size=(2, 2)))
+    model_n.add(layers.Conv2D(64, (3, 3), padding='same', activation='relu'))
+    model_n.add(layers.Conv2D(64, (3, 3), padding='same', activation='relu'))
+    model_n.add(layers.Conv2D(64, (3, 3), padding='same', activation='relu'))
+    model_n.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
-    modelN.add(layers.Conv2D(64, (3, 3), padding='same', activation='relu'))
-    modelN.add(layers.Conv2D(64, (3, 3), padding='same', activation='relu'))
-    modelN.add(layers.Conv2D(64, (3, 3), padding='same', activation='relu'))
-    modelN.add(layers.MaxPooling2D(pool_size=(2, 2)))
+    model_n.add(layers.Conv2D(128, (3, 3), padding='same', activation='relu'))
+    model_n.add(layers.Conv2D(128, (3, 3), padding='same', activation='relu'))
+    model_n.add(layers.Conv2D(128, (3, 3), padding='same', activation='relu'))
+    model_n.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
-    modelN.add(layers.Conv2D(128, (3, 3), padding='same', activation='relu'))
-    modelN.add(layers.Conv2D(128, (3, 3), padding='same', activation='relu'))
-    modelN.add(layers.Conv2D(128, (3, 3), padding='same', activation='relu'))
-    modelN.add(layers.MaxPooling2D(pool_size=(2, 2)))
+    model_n.add(layers.Flatten())
+    model_n.add(layers.Dense(64, activation='relu'))
+    model_n.add(layers.Dense(64, activation='relu'))
+    model_n.add(layers.Dense(3, activation='softmax'))
+    model_n.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    modelN.add(layers.Flatten())  # this converts our 3D feature maps to 1D feature vectors
-    modelN.add(layers.Dense(64, activation='relu'))
-    modelN.add(layers.Dense(64, activation='relu'))
-    modelN.add(layers.Dense(3, activation='softmax'))  # usar len(array_emotions)
-    modelN.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     print('Training....')
-    print(modelN.summary())
-    return modelN
+    print(model_n.summary())
+    return model_n
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------
@@ -110,7 +106,6 @@ if __name__ == "__main__":
     y_train = to_categorical(y_train)
     y_valid = to_categorical(y_valid)
     y_test = to_categorical(y_test)
-
 
     X_train = X_train.reshape((X_train.shape[0], 48, 48, 1)).astype(np.float32)
     X_valid = X_valid.reshape((X_valid.shape[0], 48, 48, 1)).astype(np.float32)
